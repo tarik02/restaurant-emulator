@@ -4,7 +4,8 @@ export default {
   api: {
     baseURL: "http://localhost/api/v1/",
     clientId: "default",
-    clientSecret: "secret"
+    clientSecret: "secret",
+    register: false,
   },
 
   actors: [

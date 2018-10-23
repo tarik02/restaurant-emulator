@@ -10,6 +10,10 @@ import config from '../config'
 
 axios.defaults.paramsSerializer = params => qs.stringify(params, { arrayFormat: 'brackets' })
 
+const actorDefaultConfig = {
+  ...config.common,
+}
+
 const axiosConfig = {
   baseURL: config.api.baseURL,
   responseType: 'json',
@@ -20,7 +24,12 @@ const axiosConfig = {
 const api = axios.create(axiosConfig)
 extendAxios(api)
 
-const authorizator = new Authorizator(api, config.api.clientId, config.api.clientSecret)
+const authorizator = new Authorizator(
+  api,
+  config.api.clientId,
+  config.api.clientSecret,
+  config.api.register,
+)
 
 _.mixin({
   await: param => {
@@ -35,25 +44,30 @@ _.mixin({
 ;(async () => {
   const actors =
     (await _(config.actors)
-      .map(async ({ type, login, config }) => {
+      .map(async ({ type, login, config }, index) => {
         const constructor = actorTypes[type]
         const actor = new constructor()
 
         if (login) {
           const { username, password } = login
           try {
-            const account = await authorizator.login(username, password)
-
-            actor.setAccount(account)
+            await authorizator.login(actor, username, password)
           } catch (e) {
-            console.error(e.toString())
-            console.error(`Failed to login with ${username} and ${password}`)
+            console.error(`Failed to login with ${username} and ${password}:`, e)
             return null
           }
         }
 
         actor.createApi(axiosConfig)
-        actor.setConfig(config)
+        
+        let id = '#' + (index + 1)
+        if (actor.account) {
+          id += `(${actor.account.data.username})`
+        }
+        actor.setConfig({
+          ...actorDefaultConfig,
+          id,
+        })
 
         return actor
       })
@@ -65,7 +79,7 @@ _.mixin({
     try {
       await actor.run()
     } catch (e) {
-      console.error('Actor thrown an error', e)
+      console.error(`Actor ${actor.id} thrown an error: `, e)
     }
   }))
 

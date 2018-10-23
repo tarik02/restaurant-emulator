@@ -1,3 +1,8 @@
+import debug from 'debug'
+debug.enable('axios')
+
+require('axios-debug-log')
+
 export const Methods = [
   'request',
   'delete',

@@ -34,6 +34,17 @@ const Random = {
       true
     ),
   }),
+
+  email: () => {
+    const start = Random.words({ min: 1, max: 2 }).join('.')
+    const domain = Random.word()
+
+    return `${start}@${domain}.com`
+  },
+
+  phone: () => {
+    return `+380` + _.times(9, () => _.random(0, 9)).join('')
+  },
 }
 
 export default Random

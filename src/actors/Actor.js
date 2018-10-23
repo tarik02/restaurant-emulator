@@ -27,10 +27,27 @@ export class Actor {
     this._config = config
   }
 
-  run() {
+
+  get id() {
+    return this._config.id
+  }
+
+  get account() {
+    return this._account
+  }
+
+  get roles() {
+    return []
   }
 
   async delay(time) {
-    await delay(time)
+    await delay(time * this._config.timeMultiplier)
+  }
+
+  reportError(error) {
+    console.error(`Actor ${this.id} reported an error: `, error)
+  }
+
+  run() {
   }
 }

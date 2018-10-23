@@ -14,6 +14,8 @@
   "dependencies": {
     "await-delay": "^1.0.0",
     "axios": "^0.18.0",
+    "axios-debug-log": "^0.4.0",
+    "chalk": "^2.4.1",
     "lodash": "^4.17.11",
     "moment": "^2.22.2",
     "qs": "^6.5.2",

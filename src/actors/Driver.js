@@ -13,35 +13,43 @@ export class Driver extends Actor {
     this._lastDriving = null
   }
 
+  get roles() {
+    return ['driver']
+  }
+
   async run() {
     while (true) {
-      if (this._location) {
-        await this.$post('/driver/report-location', {
-          location: this._location,
-        })
-      }
-
-      const response = await this.$get('/driver/dashboard')
-
-      switch (response.status) {
-      case 'ready':
-        await this.checkOrders(response.orders)
-        this.driveRandomly()
-        break;
-      case 'driving':
-        await this.driving(response)
-        break;
-      default:
-        console.warn(`Unknown driver status '${response.status}'`)
-      }
-      if (this._location === null) {
-        const loc = random.location()
-        this._location = {
-          latitude: loc.lat,
-          longitude: loc.lng,
+      try {
+        if (this._location) {
+          await this.$post('/driver/report-location', {
+            location: this._location,
+          })
         }
+
+        const response = await this.$get('/driver/dashboard')
+
+        switch (response.status) {
+        case 'ready':
+          await this.checkOrders(response.orders)
+          this.driveRandomly()
+          break;
+        case 'driving':
+          await this.driving(response)
+          break;
+        default:
+          console.warn(`Unknown driver status '${response.status}'`)
+        }
+        if (this._location === null) {
+          const loc = random.location()
+          this._location = {
+            latitude: loc.lat,
+            longitude: loc.lng,
+          }
+        }
+        this._lastDriving = Date.now()
+      } catch (e) {
+        this.reportError(e)
       }
-      this._lastDriving = Date.now()
 
       await this.delay(1000)
     }

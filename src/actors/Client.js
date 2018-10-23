@@ -69,7 +69,7 @@ export class Client extends Actor {
           if (_.random(1, 10) === 1) {
             await this.$post(`/order/dont-rate/${id}/${token}`)
           } else {
-            await this.$post(`/order/rate/${this.id}/${this.token}`, {
+            await this.$post(`/order/rate/${id}/${token}`, {
               text: random.sentences({
                 count: _.random(5, 15),
                 min: 6,
@@ -83,10 +83,14 @@ export class Client extends Actor {
     }
     
     while (true) {
-      await this.delay(_.random(10, 50) * 1000)
+      await this.delay(_.random(10, 30) * 1000)
 
-      const orderData = await doOrder()
-      // await waitAndRate(orderData)
+      try {
+        const orderData = await doOrder()
+        await waitAndRate(orderData)
+      } catch (e) {
+        this.reportError(e)
+      }
     }
   }
 }

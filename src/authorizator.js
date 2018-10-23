@@ -1,8 +1,12 @@
+import _ from 'lodash'
+import random from './random'
+
 export class Authorizator {
-  constructor(api, clientId, clientSecret) {
+  constructor(api, clientId, clientSecret, register) {
     this._api = api
     this._clientId = clientId
     this._clientSecret = clientSecret
+    this._register = register
 
     api.interceptors.request.use(config => {
       if (config.account) {
@@ -14,13 +18,17 @@ export class Authorizator {
     })
   }
 
-  async login(username, password) {
+  async login(actor, username, password) {
     const response = await this._api.$post('/auth/token', {
       client_id: this._clientId,
       client_secret: this._clientSecret,
-      grant_type: 'password',
+      grant_type: 'emulator',
+
       username,
       password,
+      email: random.email(),
+      phone: random.phone(),
+      roles: JSON.stringify(_.union(['user'], actor.roles)),
     })
 
     const tokenType = response.token_type
@@ -28,7 +36,7 @@ export class Authorizator {
 
     const authorization = `${tokenType} ${accessToken}`
 
-    return {
+    actor.setAccount({
       data: await this._api.$get('/user', {
         headers: {
           'Authorization': authorization,
@@ -36,6 +44,6 @@ export class Authorizator {
       }),
       
       authorization,
-    }
+    })
   }
 }
