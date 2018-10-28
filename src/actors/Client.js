@@ -13,8 +13,8 @@ export class Client extends Actor {
 
     const doOrder = async () => {
       const cart = _(courses)
-        .sampleSize(_.random(1, courses.length))
-        .map(course => [course.id, _.random(1, 10)])
+        .sampleSize(_.random(1, Math.min(4, courses.length)))
+        .map(course => [course.id, _.random(1, 4)])
         .fromPairs()
         .value()
 

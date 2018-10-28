@@ -9,7 +9,8 @@ export class Driver extends Actor {
     super()
 
     this._location = null
-    this._speed = 100 * (1000 / 3600)
+    // this._speed = 100 * (1000 / 3600)
+    this._speed = 5000 * (1000 / 3600)
     this._lastDriving = null
   }
 
@@ -29,8 +30,10 @@ export class Driver extends Actor {
         const response = await this.$get('/driver/dashboard')
 
         switch (response.status) {
-        case 'ready':
-          await this.checkOrders(response.orders)
+        case 'off':
+          await this.$post('/driver/on')
+          break;
+        case 'idle':
           this.driveRandomly()
           break;
         case 'driving':
@@ -52,17 +55,6 @@ export class Driver extends Actor {
       }
 
       await this.delay(1000)
-    }
-  }
-
-  async checkOrders(orders) {
-    if (orders.length === 0) {
-      return
-    }
-
-    const order = _.sample(orders)
-    if ((await this.$post(`/driver/do-order/${order.id}`)).status !== 'ok') {
-      return
     }
   }
 
@@ -98,7 +90,7 @@ export class Driver extends Actor {
     const { target: { latitude, longitude } } = order
 
     if (this._lastDriving !== null) {
-      const diff = Date.now() - this._lastDriving
+      const diff = (Date.now() - this._lastDriving) / 1000
       const speed = this._speed * diff
 
       const { lat, lng, dist: newDist } = interpolate({
